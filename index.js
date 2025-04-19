@@ -1,6 +1,5 @@
 import express from 'express';
 import bookRoutes from './routes/bookRoutes.js';
-import pool from './config/db.js';
 
 const app = express();
 app.use(express.json()); 

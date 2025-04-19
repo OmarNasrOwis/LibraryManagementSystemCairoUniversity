@@ -4,5 +4,3 @@ logs
 *.log
 npm-debug.log*
 .DS_Store
-# Ignore DB config
-config/db.js
