@@ -1,6 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const BookController = require('../controllers/BookController');
+
+import BookController from '../controllers/bookController.js';
+
 
 router.post('/', BookController.createBook);
 router.get('/', BookController.getAllBooks);
@@ -8,4 +10,4 @@ router.get('/:id', BookController.getBookById);
 router.put('/:id', BookController.updateBook);
 router.delete('/:id', BookController.deleteBook);
 
-module.exports = router;
+export default router;

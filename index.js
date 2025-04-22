@@ -12,8 +12,12 @@ dotenv.config();
 app.use('/api/books', bookRoutes);
 app.use('/users', login);
 app.use('/users', register);
+
+app.get('/', (req, res) => {
+  res.send('Welcome to backend of Library Management System App.');
+});
 // Server
 const port = process.env.PORT || 3001;
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Server is running on port 3000');
 });

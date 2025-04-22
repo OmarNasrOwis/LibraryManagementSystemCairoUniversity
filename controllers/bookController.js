@@ -1,4 +1,5 @@
-const pool = require('../config/db'); 
+import pool from '../config/db.js';
+
 
 // POST /Books
 const createBook = async (req, res) => {
@@ -57,7 +58,7 @@ const deleteBook = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   createBook,
   getAllBooks,
   getBookById,

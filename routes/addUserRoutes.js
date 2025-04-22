@@ -1,10 +1,13 @@
 // routes/auth.js
-const express = require("express");
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import pool from '../config/db.js'; 
+import dotenv from 'dotenv';
+
+dotenv.config(); 
+
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const pool = require("../config/db.js");
-require("dotenv").config();
 
 
 async function createUser(username, password, role) {
@@ -50,5 +53,4 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
-module.exports = router;
+export default router;
