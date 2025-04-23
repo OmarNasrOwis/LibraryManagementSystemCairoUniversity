@@ -12,7 +12,7 @@ import BookController from '../controllers/bookController.js';
 
 router.post('/', BookController.createBook);
 router.get('/', BookController.getAllBooks);
-router.get('/:id', BookController.getBookById);
+router.get('/:id', BookController.getBookByISBN);
 router.put('/:id', BookController.updateBook);
 router.delete('/:id', BookController.deleteBook);
 
