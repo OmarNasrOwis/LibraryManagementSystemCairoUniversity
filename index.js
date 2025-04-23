@@ -1,7 +1,6 @@
 import express from 'express';
 import bookRoutes from './routes/bookRoutes.js';
-import login from './routes/loginRouter.js'
-import register from './routes/addUserRoutes.js'
+import userRoutes  from './routes/userRoutes.js'
 import dotenv from 'dotenv';
 const app = express();
 app.use(express.json()); 
@@ -9,10 +8,8 @@ app.use(express.json());
 dotenv.config();
 
 // Routes
-app.use('/api/books', bookRoutes);
-app.use('/users', login);
-app.use('/users', register);
-
+//app.use('/api/books', bookRoutes);
+app.use('/users', userRoutes);  
 app.get('/', (req, res) => {
   res.send('Welcome to backend of Library Management System App.');
 });
