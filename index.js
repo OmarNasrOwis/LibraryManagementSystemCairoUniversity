@@ -2,6 +2,7 @@ import express from "express";
 import bookRoutes from "./routes/bookRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import borrowedBooks from "./routes/borrowedBookRoutes.js";
+import "./controllers/overdueAlertScheduler.js"
 import dotenv from "dotenv";
 const app = express();
 app.use(express.json());
