@@ -1,7 +1,8 @@
-const cron = require("node-cron");
-const nodemailer = require("nodemailer");
+import cron from "node-cron";
+import nodemailer from "nodemailer";
 import pool from "../config/db.js";
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 
 var transporter = nodemailer.createTransport({
   service: "gmail",
@@ -28,6 +29,7 @@ cron.schedule("0 7 * * *", async () => {
       AND b.returned = false`,
       [today]
     );
+    console.log(result.rows);
     //console.log(result.rows)
     if (result.rows.length === 0) {
       console.log("No overdue books today.");
@@ -57,5 +59,3 @@ Library Team`,
 });
 
 export default cron;
-
-
