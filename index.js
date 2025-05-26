@@ -1,10 +1,13 @@
 import express from "express";
+import cors from "cors";
 import bookRoutes from "./routes/bookRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import borrowedBooks from "./routes/borrowedBookRoutes.js";
 import "./controllers/overdueAlertScheduler.js"
 import dotenv from "dotenv";
+
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 dotenv.config();
