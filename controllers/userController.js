@@ -45,7 +45,7 @@ export async function loginUser(username, password) {
 }
 
 export async function getAllStudents() {
-  const result = await pool.query("SELECT * FROM users WHERE role = 'student'");
+  const result = await pool.query("SELECT username,fullname,role,email ,studentid FROM users WHERE role = 'student'");
   return result.rows;
 }
 
