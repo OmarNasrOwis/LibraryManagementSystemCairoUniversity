@@ -28,7 +28,12 @@ export async function loginUser(username, password) {
     throw new Error("Invalid username or password");
   }
 
+  var studentid;
   const user = result.rows[0];
+  console.log(user.studentid)
+  if(user.studentid){
+    var studentid= user.studentid
+  }
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
@@ -41,7 +46,7 @@ export async function loginUser(username, password) {
     { expiresIn: "1d" }
   );
 
-  return { token, role: user.role };
+  return { studentid, role: user.role };
 }
 
 export async function getAllStudents() {
