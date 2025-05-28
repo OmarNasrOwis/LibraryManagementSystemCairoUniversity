@@ -45,7 +45,7 @@ export async function loginUser(username, password) {
     { expiresIn: "1d" }
   );
 
-  return { studentid, role: user.role };
+  return { studentid,token, role: user.role };
 }
 
 export async function getAllStudents() {
