@@ -3,7 +3,8 @@ import {
   getAllBorrowedBooks,
   createBorrowRequest,
   processBorrowDecision,
-  getBorrowedBooksByStudent
+  getBorrowedBooksByStudent,
+  getneedDecidedBorrows,
 } from "../controllers/borrowedBookController.js";
 
 const router = express.Router();
@@ -26,9 +27,7 @@ router.post("/borrow-request", async (req, res) => {
   const { student_id, isbn } = req.body;
 
   if (!student_id || !isbn) {
-    return res
-      .status(400)
-      .json({ error: "student_id and isbn are required" });
+    return res.status(400).json({ error: "student_id and isbn are required" });
   }
 
   try {
@@ -55,7 +54,7 @@ router.post("/borrow-decision", async (req, res) => {
       )
     );
 
-    const updated = results.map(result => result.rows[0]).filter(Boolean);
+    const updated = results.map((result) => result.rows[0]).filter(Boolean);
 
     res.status(200).json({ status: "Successful", updated });
   } catch (err) {
@@ -71,7 +70,9 @@ router.get("/:student_id", async (req, res) => {
     const result = await getBorrowedBooksByStudent(student_id);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No borrowed books found for this student." });
+      return res
+        .status(404)
+        .json({ message: "No borrowed books found for this student." });
     }
 
     res.status(200).json(result.rows);
@@ -81,5 +82,21 @@ router.get("/:student_id", async (req, res) => {
   }
 });
 
+router.get("/borrow-decision/pending", async (req, res) => {
+  try {
+    const result = await getneedDecidedBorrows();
+
+    if (result.rows.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No decided borrow requests found" });
+    }
+
+    res.status(200).json({ status: "Successful", records: result.rows });
+  } catch (err) {
+    console.error("Error fetching decided borrow requests:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;

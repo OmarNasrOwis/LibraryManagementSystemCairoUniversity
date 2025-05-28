@@ -19,7 +19,6 @@ export const createBorrowRequest = async (student_id, isbn) => {
 
 //get all requested books by student id
 
-
 export const getBorrowedBooksByStudent = async (student_id) => {
   const result = await pool.query(
     "SELECT * FROM borrowed_books WHERE studentid = $1",
@@ -32,6 +31,15 @@ export const processBorrowDecision = async (request_id, status) => {
   const result = await pool.query(
     "UPDATE borrowed_books SET status = $1 WHERE id = $2 RETURNING *",
     [status, request_id]
+  );
+  return result;
+};
+
+//get pending books
+export const getneedDecidedBorrows = async () => {
+  const result = await pool.query(
+    "SELECT * FROM borrowed_books WHERE status = $1",
+    [2]
   );
   return result;
 };
