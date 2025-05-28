@@ -116,10 +116,61 @@ const deleteBook = async (req, res) => {
   }
 };
 
+//get all available books for student when availbiity is true and requst is more 7 days
+
+const getAvailableBooks = async (req, res) => {
+  const studentId = req.params.id; // Get the studentId from the route parameter
+
+  if (!studentId) {
+    return res.status(400).json({
+      message: "Student ID is required",
+    });
+  }
+
+  try {
+    // Calculate date 7 days from now
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+    const query = `
+      SELECT b.* 
+      FROM books b
+      WHERE b.availability = true 
+      AND b.quantity > 1
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM borrowed_books bb
+        WHERE bb.isbn = b.isbn
+        AND bb.studentid = $1  -- Filter by student_id
+        AND bb.request_start_date < $2  -- Exclude requests that started less than 7 days ago
+        AND (bb.return_date IS NULL OR bb.return_date > CURRENT_DATE)
+      )
+      ORDER BY b.title;
+    `;
+
+    const { rows } = await pool.query(query, [studentId, sevenDaysFromNow]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message:
+          "No available books found for the specified student with the given criteria",
+      });
+    }
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching available books:", error);
+    res.status(500).json({
+      error: "Server error",
+      details: error.message,
+    });
+  }
+};
 export default {
   createBook,
   getAllBooks,
   getBookByISBN,
   updateBook,
   deleteBook,
+  getAvailableBooks,
 };

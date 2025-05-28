@@ -15,5 +15,7 @@ router.get('/', BookController.getAllBooks);
 router.get('/:id', BookController.getBookByISBN);
 router.put('/:id', BookController.updateBook);
 router.delete('/:id', BookController.deleteBook);
+router.get('/available/:id', BookController.getAvailableBooks);
+
 
 export default router;
