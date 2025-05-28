@@ -3,6 +3,7 @@ import {
   getAllBorrowedBooks,
   createBorrowRequest,
   processBorrowDecision,
+  getBorrowedBooksByStudent
 } from "../controllers/borrowedBookController.js";
 
 const router = express.Router();
@@ -62,4 +63,23 @@ router.post("/borrow-decision", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get("/:student_id", async (req, res) => {
+  const { student_id } = req.params;
+
+  try {
+    const result = await getBorrowedBooksByStudent(student_id);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No borrowed books found for this student." });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching borrowed books by student ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 export default router;

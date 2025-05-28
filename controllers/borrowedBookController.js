@@ -17,6 +17,16 @@ export const createBorrowRequest = async (student_id, isbn) => {
   return result.rows[0];
 };
 
+//get all requested books by student id
+
+
+export const getBorrowedBooksByStudent = async (student_id) => {
+  const result = await pool.query(
+    "SELECT * FROM borrowed_books WHERE studentid = $1",
+    [student_id]
+  );
+  return result;
+};
 // Process borrow decision
 export const processBorrowDecision = async (request_id, status) => {
   const result = await pool.query(
