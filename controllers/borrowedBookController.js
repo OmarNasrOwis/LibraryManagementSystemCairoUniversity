@@ -20,7 +20,7 @@ export const createBorrowRequest = async (student_id, isbn) => {
 // Process borrow decision
 export const processBorrowDecision = async (request_id, status) => {
   const result = await pool.query(
-    "UPDATE borrowed_books SET status = $1  WHERE id = $2 RETURNING *",
+    "UPDATE borrowed_books SET status = $1 WHERE id = $2 RETURNING *",
     [status, request_id]
   );
   return result;

@@ -41,22 +41,25 @@ router.post("/borrow-request", async (req, res) => {
 
 // Admin borrow decision
 router.post("/borrow-decision", async (req, res) => {
-  const { request_id, status } = req.body;
+  const decisions = req.body; // Expecting an array of { request_id, status }
 
-  
+  if (!Array.isArray(decisions)) {
+    return res.status(400).json({ error: "Request body must be an array" });
+  }
 
   try {
-    const result = await processBorrowDecision(request_id, status);
+    const results = await Promise.all(
+      decisions.map(({ request_id, status }) =>
+        processBorrowDecision(request_id, status)
+      )
+    );
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Request not found" });
-    }
+    const updated = results.map(result => result.rows[0]).filter(Boolean);
 
-    res.status(200).json({ status: "Successful", updated: result.rows[0] });
+    res.status(200).json({ status: "Successful", updated });
   } catch (err) {
-    console.error("Error processing borrow decision:", err);
+    console.error("Error processing borrow decisions:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 export default router;
