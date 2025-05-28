@@ -30,7 +30,6 @@ export async function loginUser(username, password) {
 
   var studentid;
   const user = result.rows[0];
-  console.log(user.studentid)
   if(user.studentid){
     var studentid= user.studentid
   }
