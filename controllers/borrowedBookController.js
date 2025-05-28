@@ -23,13 +23,29 @@ export const processBorrowDecision = async (request_id, status) => {
 };
 
 export const getPendingBorrows = async () => {
-  return await pool.query("SELECT * FROM borrowed_books WHERE status = 2");
+  return await pool.query(`
+    SELECT borrowed_books.*, users.fullname
+    FROM borrowed_books
+    JOIN users ON borrowed_books.studentid = users.studentid
+    WHERE borrowed_books.status = 2
+  `);
 };
 
+
 export const getApprovedBorrows = async () => {
-  return await pool.query("SELECT * FROM borrowed_books WHERE status = 1");
+  return await pool.query(`
+    SELECT borrowed_books.*, users.fullname
+    FROM borrowed_books
+    JOIN users ON borrowed_books.studentid = users.studentid
+    WHERE borrowed_books.status = 1
+  `);
 };
 
 export const getRejectedBorrows = async () => {
-  return await pool.query("SELECT * FROM borrowed_books WHERE status = 0");
+  return await pool.query(`
+    SELECT borrowed_books.*, users.fullname
+    FROM borrowed_books
+    JOIN users ON borrowed_books.studentid = users.studentid
+    WHERE borrowed_books.status = 0
+  `);
 };
