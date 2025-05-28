@@ -20,13 +20,23 @@ const createBook = async (req, res) => {
     isbn,
     availability,
     published_date,
-    quantity
+    quantity,
   } = req.body;
   try {
     await pool.query(
-      "INSERT INTO books (title, author, publisher,barcode,isbn,availability, published_date) VALUES ($1, $2, $3, $4, $5, $6, $7,$8)",
-      [title, author, publisher, barcode, isbn, availability, published_date,quantity]
+      "INSERT INTO books (title, author, publisher, barcode, isbn, availability, published_date, quantity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+      [
+        title,
+        author,
+        publisher,
+        barcode,
+        isbn,
+        availability,
+        published_date,
+        quantity,
+      ]
     );
+
     res.status(201).send("Book created successfully");
   } catch (err) {
     res.status(500).json({ error: err.message });
