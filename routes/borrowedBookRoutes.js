@@ -21,20 +21,21 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/borrow-request", async (req, res) => {
-  const { student_id, isbn } = req.body;
+  const { student_id, isbn, request_start_date } = req.body;
 
   if (!student_id || !isbn) {
     return res.status(400).json({ error: "student_id and isbn are required" });
   }
 
   try {
-    const result = await createBorrowRequest(student_id, isbn);
+    const result = await createBorrowRequest(student_id, isbn, request_start_date);
     res.status(201).json({ status: "Successful", request: result });
   } catch (err) {
     console.error("Error creating borrow request:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 router.post("/borrow-decision", async (req, res) => {
   const decisions = req.body;

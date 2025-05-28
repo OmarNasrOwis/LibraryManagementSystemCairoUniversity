@@ -5,13 +5,14 @@ export const getAllBorrowedBooks = async () => {
   return result.rows;
 };
 
-export const createBorrowRequest = async (student_id, isbn) => {
+export const createBorrowRequest = async (student_id, isbn, request_start_date) => {
   const result = await pool.query(
-    "INSERT INTO borrowed_books (studentid, isbn, status) VALUES ($1, $2, $3) RETURNING *",
-    [student_id, isbn, "0"]
+    "INSERT INTO borrowed_books (studentid, isbn, status, request_start_date) VALUES ($1, $2, $3, $4) RETURNING *",
+    [student_id, isbn, "0", request_start_date]
   );
   return result.rows[0];
 };
+
 
 export const getBorrowedBooksByStudent = async (student_id) => {
   return await pool.query("SELECT * FROM borrowed_books WHERE studentid = $1", [student_id]);
