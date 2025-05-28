@@ -4,7 +4,9 @@ import {
   createBorrowRequest,
   processBorrowDecision,
   getBorrowedBooksByStudent,
-  getneedDecidedBorrows,
+  getPendingBorrows,
+  getRejectedBorrows,
+  getApprovedBorrows,
 } from "../controllers/borrowedBookController.js";
 
 const router = express.Router();
@@ -12,17 +14,12 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const books = await getAllBorrowedBooks();
-    if (books.length > 0) {
-      res.status(200).json(books);
-    } else {
-      res.status(200).json("No Borrowed Books At the moment");
-    }
+    res.status(200).json({ books });
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve borrowed books" });
   }
 });
 
-// Create borrow request
 router.post("/borrow-request", async (req, res) => {
   const { student_id, isbn } = req.body;
 
@@ -32,16 +29,15 @@ router.post("/borrow-request", async (req, res) => {
 
   try {
     const result = await createBorrowRequest(student_id, isbn);
-    res.status(200).json({ status: "Successful", request: result });
+    res.status(201).json({ status: "Successful", request: result });
   } catch (err) {
     console.error("Error creating borrow request:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Admin borrow decision
 router.post("/borrow-decision", async (req, res) => {
-  const decisions = req.body; // Expecting an array of { request_id, status }
+  const decisions = req.body;
 
   if (!Array.isArray(decisions)) {
     return res.status(400).json({ error: "Request body must be an array" });
@@ -84,17 +80,30 @@ router.get("/:student_id", async (req, res) => {
 
 router.get("/borrow-decision/pending", async (req, res) => {
   try {
-    const result = await getneedDecidedBorrows();
-
-    if (result.rows.length === 0) {
-      return res
-        .status(200)
-        .json({ message: "No decided borrow requests found" });
-    }
-
+    const result = await getPendingBorrows();
     res.status(200).json({ status: "Successful", records: result.rows });
   } catch (err) {
-    console.error("Error fetching decided borrow requests:", err);
+    console.error("Error fetching pending borrow requests:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/borrow-decision/approved", async (req, res) => {
+  try {
+    const result = await getApprovedBorrows();
+    res.status(200).json({ status: "Successful", records: result.rows });
+  } catch (err) {
+    console.error("Error fetching approved borrow requests:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/borrow-decision/rejected", async (req, res) => {
+  try {
+    const result = await getRejectedBorrows();
+    res.status(200).json({ status: "Successful", records: result.rows });
+  } catch (err) {
+    console.error("Error fetching rejected borrow requests:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
