@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  const { username, password, role, email } = req.body;
+  const { username, password, role, email, fullname, studentid } = req.body;
   const missingFields = [];
   if (!username) missingFields.push("username");
   if (!password) missingFields.push("password");
@@ -18,13 +18,20 @@ router.post("/register", async (req, res) => {
   if (!email) missingFields.push("email");
 
   if (missingFields.length > 0) {
-    return res
-      .status(400)
-      .json({ message: `Missing required field(s): ${missingFields.join(", ")}` });
+    return res.status(400).json({
+      message: `Missing required field(s): ${missingFields.join(", ")}`,
+    });
   }
 
   try {
-    const newUser = await createUser(username, password, role, email);
+    const newUser = await createUser(
+      username,
+      password,
+      role,
+      email,
+      fullname,
+      studentid
+    );
     res.status(201).json({
       message: "User created successfully",
       user: {
@@ -32,6 +39,8 @@ router.post("/register", async (req, res) => {
         username: newUser.username,
         role: newUser.role,
         email: newUser.email,
+        fullname: newUser.fullname,
+        studentid: newUser.studentid,
       },
     });
   } catch (err) {
@@ -60,8 +69,8 @@ router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const { studentid,token, role } = await loginUser(username, password);
-    res.json({ message: "Login successful", token,studentid, role });
+    const { studentid, token, role } = await loginUser(username, password);
+    res.json({ message: "Login successful", token, studentid, role });
   } catch (err) {
     res.status(401).json({ message: err.message });
   }

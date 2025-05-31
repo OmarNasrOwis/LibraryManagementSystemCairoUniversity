@@ -2,14 +2,17 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js"; // make sure your db.js also uses ES module syntax
 
-export async function createUser(username, password, role, email) {
+export async function createUser(username, password, role, email, fullname, studentid) {
   const hashedPassword = await bcrypt.hash(password, 10);
   const result = await pool.query(
-    "INSERT INTO users (username, password, role, email) VALUES ($1, $2, $3, $4) RETURNING id, username, role, email",
-    [username, hashedPassword, role, email]
+    `INSERT INTO users (username, password, role, email, fullname, studentid)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING id, username, role, email, fullname, studentid`,
+    [username, hashedPassword, role, email, fullname, studentid]
   );
   return result.rows[0];
 }
+
 
 export async function deleteUser(username) {
   const result = await pool.query(
