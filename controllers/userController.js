@@ -2,7 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js"; // make sure your db.js also uses ES module syntax
 
-export async function createUser(username, password, role, email, fullname, studentid) {
+export async function createUser(
+  username,
+  password,
+  role,
+  email,
+  fullname,
+  studentid
+) {
   const hashedPassword = await bcrypt.hash(password, 10);
   const result = await pool.query(
     `INSERT INTO users (username, password, role, email, fullname, studentid)
@@ -13,7 +20,6 @@ export async function createUser(username, password, role, email, fullname, stud
   return result.rows[0];
 }
 
-
 export async function deleteUser(username) {
   const result = await pool.query(
     "DELETE FROM users WHERE username = $1 RETURNING *",
@@ -21,21 +27,25 @@ export async function deleteUser(username) {
   );
   return result;
 }
+export async function loginUser(identifier, password) {
+  let result;
 
-export async function loginUser(username, password) {
-  const result = await pool.query("SELECT * FROM users WHERE username = $1", [
-    username,
-  ]);
+  // Check if identifier is numeric (assumed to be studentid)
+  if (!isNaN(identifier)) {
+    result = await pool.query("SELECT * FROM users WHERE studentid = $1", [
+      identifier,
+    ]);
+  } else {
+    result = await pool.query("SELECT * FROM users WHERE username = $1", [
+      identifier,
+    ]);
+  }
 
   if (result.rows.length === 0) {
     throw new Error("Invalid username or password");
   }
 
-  var studentid;
   const user = result.rows[0];
-  if(user.studentid){
-    var studentid= user.studentid
-  }
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
@@ -48,11 +58,17 @@ export async function loginUser(username, password) {
     { expiresIn: "1d" }
   );
 
-  return { studentid,token, role: user.role };
+  return {
+    studentid: user.studentid || null,
+    token,
+    role: user.role,
+  };
 }
 
 export async function getAllStudents() {
-  const result = await pool.query("SELECT username,fullname,role,email ,studentid FROM users WHERE role = 'student'");
+  const result = await pool.query(
+    "SELECT username,fullname,role,email ,studentid FROM users WHERE role = 'student'"
+  );
   return result.rows;
 }
 

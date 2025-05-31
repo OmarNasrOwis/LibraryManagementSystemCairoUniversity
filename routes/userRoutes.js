@@ -64,12 +64,11 @@ router.delete("/delete/:username", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { username: identifier, password } = req.body;
 
   try {
-    const { studentid, token, role } = await loginUser(username, password);
+    const { studentid, token, role } = await loginUser(identifier, password);
     res.json({ message: "Login successful", token, studentid, role });
   } catch (err) {
     res.status(401).json({ message: err.message });
