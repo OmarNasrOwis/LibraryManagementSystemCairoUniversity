@@ -39,13 +39,59 @@ export const getBorrowedBooksByStudent = async (student_id) => {
     [student_id]
   );
 };
-
 export const processBorrowDecision = async (request_id, status) => {
-  return await pool.query(
-    "UPDATE borrowed_books SET status = $1 WHERE id = $2 RETURNING *",
-    [status, request_id]
-  );
+  try {
+    const checkAvailabilityResult = await pool.query(`
+      SELECT availability, isbn
+      FROM books
+      WHERE isbn = (
+        SELECT isbn
+        FROM borrowed_books
+        WHERE id = $1
+      )
+    `, [request_id]);
+
+    if (checkAvailabilityResult.rows.length === 0) {
+      throw new Error("Book not found for the provided request ID.");
+    }
+
+    const bookAvailability = checkAvailabilityResult.rows[0].availability;
+
+    if (bookAvailability === false || bookAvailability === "false" || bookAvailability === null) {
+      throw new Error("Book is not available for borrowing.");
+    }
+
+    const result = await pool.query(`
+      WITH updated_borrowed AS (
+        UPDATE borrowed_books
+        SET status = $1
+        WHERE id = $2
+        RETURNING borrowed_books.isbn
+      )
+      UPDATE books
+      SET quantity = CASE
+        WHEN books.quantity > 0 THEN books.quantity - 1
+        ELSE books.quantity
+      END,
+      availability = CASE
+        WHEN books.quantity - 1 = 0 THEN false  -- Make availability false if quantity becomes 0
+        ELSE books.availability
+      END
+      FROM updated_borrowed
+      WHERE books.isbn = updated_borrowed.isbn
+      RETURNING books.isbn, books.quantity, books.availability
+    `, [status, request_id]);
+
+    if (result.rows.length === 0) {
+      throw new Error("Failed to update borrow decision. Book may no longer be available.");
+    }
+
+    return result;
+  } catch (err) {
+    throw err; // Rethrow the error to be caught by the route handler
+  }
 };
+
 export const getPendingBorrows = async () => {
   return await pool.query(`
     SELECT borrowed_books.*, books.*, users.fullname

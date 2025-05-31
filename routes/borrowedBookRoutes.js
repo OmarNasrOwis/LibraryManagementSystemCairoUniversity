@@ -28,14 +28,17 @@ router.post("/borrow-request", async (req, res) => {
   }
 
   try {
-    const result = await createBorrowRequest(student_id, isbn, request_start_date);
+    const result = await createBorrowRequest(
+      student_id,
+      isbn,
+      request_start_date
+    );
     res.status(201).json({ status: "Successful", request: result });
   } catch (err) {
     console.error("Error creating borrow request:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 router.post("/borrow-decision", async (req, res) => {
   const decisions = req.body;
@@ -51,14 +54,23 @@ router.post("/borrow-decision", async (req, res) => {
       )
     );
 
-    const updated = results.map((result) => result.rows[0]).filter(Boolean);
+    // Ensure there are no undefined or empty results
+    const updated = results
+      .filter((result) => result && result.rows && result.rows.length > 0) // Filter out any invalid results
+      .map((result) => result.rows[0]); // Now it's safe to access result.rows[0]
+
+    if (updated.length === 0) {
+      return res.status(400).json({ error: "No valid borrow decisions were processed." });
+    }
 
     res.status(200).json({ status: "Successful", updated });
   } catch (err) {
-    console.error("Error processing borrow decisions:", err);
-    res.status(500).json({ error: "Internal server error" });
+    // If an error was thrown (e.g., book is not available)
+    console.error("Error processing borrow decisions:", err.message);
+    res.status(400).json({ error: err.message }); // Send the error message from the processBorrowDecision
   }
 });
+
 
 router.get("/:student_id", async (req, res) => {
   const { student_id } = req.params;
