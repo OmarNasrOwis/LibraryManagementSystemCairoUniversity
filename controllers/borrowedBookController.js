@@ -14,10 +14,17 @@ export const createBorrowRequest = async (
   isbn,
   request_start_date
 ) => {
+  const requestDate = new Date(request_start_date);
+  const returnDate = new Date(requestDate);
+  returnDate.setDate(returnDate.getDate() + 7); // Adds 7 days to the request date
+
   const result = await pool.query(
-    "INSERT INTO borrowed_books (studentid, isbn, status, request_start_date) VALUES ($1, $2, $3, $4) RETURNING *",
-    [student_id, isbn, "2", request_start_date]
+    `INSERT INTO borrowed_books (studentid, isbn, status, request_start_date, return_date)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [student_id, isbn, "2", requestDate, returnDate]
   );
+
   return result.rows[0];
 };
 
