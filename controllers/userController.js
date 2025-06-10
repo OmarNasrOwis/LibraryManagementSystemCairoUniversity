@@ -57,11 +57,13 @@ export async function loginUser(identifier, password) {
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
+  
 
   return {
     studentid: user.studentid || null,
     token,
     role: user.role,
+    fullname:user.fullname
   };
 }
 
