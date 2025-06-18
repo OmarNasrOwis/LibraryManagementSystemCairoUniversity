@@ -6,14 +6,14 @@ const handleError = (res, err, message = "Server Error") => {
 };
 
 const createBook = async (req, res) => {
-  const { title, author, publisher, barcode, isbn, availability, published_date, quantity } = req.body;
-  
+  const { title, author, publisher, barcode, isbn, availability, published_date, quantity, image } = req.body; 
+
   try {
     const query = `
-      INSERT INTO books (title, author, publisher, barcode, isbn, availability, published_date, quantity)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO books (title, author, publisher, barcode, isbn, availability, published_date, quantity, image)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
-    const values = [title, author, publisher, barcode, isbn, availability, published_date, quantity];
+    const values = [title, author, publisher, barcode, isbn, availability, published_date, quantity, image];
 
     await pool.query(query, values);
 
@@ -66,8 +66,17 @@ const getBookByISBN = async (req, res) => {
 };
 
 const updateBook = async (req, res) => {
-  const { availability } = req.body;
   const { isbn } = req.params;
+  const updates = req.body; 
+  const keys = Object.keys(updates);
+
+  if (keys.length === 0) {
+    return res.status(400).json({ message: "No fields provided to update" });
+  }
+
+  const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(", ");
+  const values = keys.map((key) => updates[key]);
+  values.push(isbn); 
 
   try {
     const result = await pool.query("SELECT * FROM books WHERE isbn = $1", [isbn]);
@@ -76,13 +85,15 @@ const updateBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    await pool.query("UPDATE books SET availability = $1 WHERE isbn = $2", [availability, isbn]);
+    const query = `UPDATE books SET ${setClause} WHERE isbn = $${values.length}`;
+    await pool.query(query, values);
 
     res.status(200).json({ message: "Book updated successfully" });
   } catch (err) {
     handleError(res, err, "Error updating book");
   }
 };
+
 
 const deleteBook = async (req, res) => {
   const { isbn } = req.params;
