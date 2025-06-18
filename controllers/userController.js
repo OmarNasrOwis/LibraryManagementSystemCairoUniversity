@@ -49,6 +49,7 @@ export async function loginUser(identifier, password) {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
+    console.log(isMatch)
     throw new Error("Invalid username or password");
   }
 
