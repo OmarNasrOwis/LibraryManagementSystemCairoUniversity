@@ -41,7 +41,8 @@ export const getBorrowedBooksByStudent = async (student_id) => {
 };
 export const processBorrowDecision = async (request_id, status) => {
   try {
-    const checkAvailabilityResult = await pool.query(`
+    const checkAvailabilityResult = await pool.query(
+      `
       SELECT availability, isbn
       FROM books
       WHERE isbn = (
@@ -49,7 +50,9 @@ export const processBorrowDecision = async (request_id, status) => {
         FROM borrowed_books
         WHERE id = $1
       )
-    `, [request_id]);
+    `,
+      [request_id]
+    );
 
     if (checkAvailabilityResult.rows.length === 0) {
       throw new Error("Book not found for the provided request ID.");
@@ -57,11 +60,16 @@ export const processBorrowDecision = async (request_id, status) => {
 
     const bookAvailability = checkAvailabilityResult.rows[0].availability;
 
-    if (bookAvailability === false || bookAvailability === "false" || bookAvailability === null) {
+    if (
+      bookAvailability === false ||
+      bookAvailability === "false" ||
+      bookAvailability === null
+    ) {
       throw new Error("Book is not available for borrowing.");
     }
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       WITH updated_borrowed AS (
         UPDATE borrowed_books
         SET status = $1
@@ -80,10 +88,14 @@ export const processBorrowDecision = async (request_id, status) => {
       FROM updated_borrowed
       WHERE books.isbn = updated_borrowed.isbn
       RETURNING books.isbn, books.quantity, books.availability
-    `, [status, request_id]);
+    `,
+      [status, request_id]
+    );
 
     if (result.rows.length === 0) {
-      throw new Error("Failed to update borrow decision. Book may no longer be available.");
+      throw new Error(
+        "Failed to update borrow decision. Book may no longer be available."
+      );
     }
 
     return result;
@@ -94,11 +106,24 @@ export const processBorrowDecision = async (request_id, status) => {
 
 export const getPendingBorrows = async () => {
   return await pool.query(`
-    SELECT borrowed_books.*, books.*, users.fullname
-    FROM borrowed_books
-    JOIN users ON borrowed_books.studentid = users.studentid
-    JOIN books ON borrowed_books.isbn = books.isbn
-    WHERE borrowed_books.status = 2
+    SELECT borrowed_books.*, 
+       books.availability, 
+       books.published_date, 
+       books.quantity, 
+       books.created_at, 
+       books.updated_at, 
+       books.image, 
+       books.title, 
+       books.author, 
+       books.publisher, 
+       books.barcode, 
+       books.isbn, 
+       users.fullname
+FROM borrowed_books
+JOIN users ON borrowed_books.studentid = users.studentid
+JOIN books ON borrowed_books.isbn = books.isbn
+WHERE borrowed_books.status = 2;
+
   `);
 };
 

@@ -53,14 +53,16 @@ router.post("/borrow-decision", async (req, res) => {
         processBorrowDecision(request_id, status)
       )
     );
-
+    console.log(results);
     // Ensure there are no undefined or empty results
     const updated = results
       .filter((result) => result && result.rows && result.rows.length > 0) // Filter out any invalid results
       .map((result) => result.rows[0]); // Now it's safe to access result.rows[0]
 
     if (updated.length === 0) {
-      return res.status(400).json({ error: "No valid borrow decisions were processed." });
+      return res
+        .status(400)
+        .json({ error: "No valid borrow decisions were processed." });
     }
 
     res.status(200).json({ status: "Successful", updated });
@@ -70,7 +72,6 @@ router.post("/borrow-decision", async (req, res) => {
     res.status(400).json({ error: err.message }); // Send the error message from the processBorrowDecision
   }
 });
-
 
 router.get("/:student_id", async (req, res) => {
   const { student_id } = req.params;
