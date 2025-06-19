@@ -39,8 +39,9 @@ export const getBorrowedBooksByStudent = async (student_id) => {
     [student_id]
   );
 };
-export const processBorrowDecision = async (request_id, status) => {
+export const processBorrowDecision = async (request_id, status) => { 
   try {
+    // Check if the book is available
     const checkAvailabilityResult = await pool.query(
       `
       SELECT availability, isbn
@@ -60,6 +61,7 @@ export const processBorrowDecision = async (request_id, status) => {
 
     const bookAvailability = checkAvailabilityResult.rows[0].availability;
 
+    // Check if the book is available for borrowing
     if (
       bookAvailability === false ||
       bookAvailability === "false" ||
@@ -68,8 +70,7 @@ export const processBorrowDecision = async (request_id, status) => {
       throw new Error("Book is not available for borrowing.");
     }
 
-    const result = await pool.query(
-      `
+    let updateBorrowQuery = `
       WITH updated_borrowed AS (
         UPDATE borrowed_books
         SET status = $1
@@ -82,27 +83,67 @@ export const processBorrowDecision = async (request_id, status) => {
         ELSE books.quantity
       END,
       availability = CASE
-        WHEN books.quantity - 1 = 0 THEN false  -- Make availability false if quantity becomes 0
+        WHEN books.quantity - 1 = 0 THEN false
         ELSE books.availability
       END
       FROM updated_borrowed
       WHERE books.isbn = updated_borrowed.isbn
       RETURNING books.isbn, books.quantity, books.availability
-    `,
-      [status, request_id]
-    );
+    `;
+    
+    if (status === 1) { // If approved, add 7 days to the return_date
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
 
-    if (result.rows.length === 0) {
-      throw new Error(
-        "Failed to update borrow decision. Book may no longer be available."
-      );
+      updateBorrowQuery = `
+        WITH updated_borrowed AS (
+          UPDATE borrowed_books
+          SET status = $1, return_date = $2
+          WHERE id = $3
+          RETURNING borrowed_books.isbn
+        )
+        UPDATE books
+        SET quantity = CASE
+          WHEN books.quantity > 0 THEN books.quantity - 1
+          ELSE books.quantity
+        END,
+        availability = CASE
+          WHEN books.quantity - 1 = 0 THEN false
+          ELSE books.availability
+        END
+        FROM updated_borrowed
+        WHERE books.isbn = updated_borrowed.isbn
+        RETURNING books.isbn, books.quantity, books.availability
+      `;
+      
+      // Include the 7 days later date in the query parameters
+      const result = await pool.query(updateBorrowQuery, [status, sevenDaysLater, request_id]);
+
+      if (result.rows.length === 0) {
+        throw new Error(
+          "Failed to update borrow decision. Book may no longer be available."
+        );
+      }
+
+      return result;
+    } else {
+      // For other statuses, no need to modify return_date
+      const result = await pool.query(updateBorrowQuery, [status, request_id]);
+
+      if (result.rows.length === 0) {
+        throw new Error(
+          "Failed to update borrow decision. Book may no longer be available."
+        );
+      }
+
+      return result;
     }
 
-    return result;
   } catch (err) {
     throw err; // Rethrow the error to be caught by the route handler
   }
 };
+
 
 export const getPendingBorrows = async () => {
   return await pool.query(`
