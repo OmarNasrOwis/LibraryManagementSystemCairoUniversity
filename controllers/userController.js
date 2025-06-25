@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import pool from "../config/db.js"; // make sure your db.js also uses ES module syntax
+import pool from "../config/db.js"; 
 
 export async function createUser(
   username,
@@ -30,7 +30,6 @@ export async function deleteUser(username) {
 export async function loginUser(identifier, password) {
   let result;
 
-  // Check if identifier is numeric (assumed to be studentid)
   if (!isNaN(identifier)) {
     result = await pool.query("SELECT * FROM users WHERE studentid = $1", [
       identifier,

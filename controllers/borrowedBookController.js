@@ -16,7 +16,7 @@ export const createBorrowRequest = async (
 ) => {
   const requestDate = new Date(request_start_date);
   const returnDate = new Date(requestDate);
-  returnDate.setDate(returnDate.getDate() + 7); // Adds 7 days to the request date
+  returnDate.setDate(returnDate.getDate() + 7); 
 
   const result = await pool.query(
     `INSERT INTO borrowed_books (studentid, isbn, status, request_start_date, return_date)
@@ -41,7 +41,6 @@ export const getBorrowedBooksByStudent = async (student_id) => {
 };
 export const processBorrowDecision = async (request_id, status) => { 
   try {
-    // Check if the book is available
     const checkAvailabilityResult = await pool.query(
       `
       SELECT availability, isbn
@@ -61,7 +60,6 @@ export const processBorrowDecision = async (request_id, status) => {
 
     const bookAvailability = checkAvailabilityResult.rows[0].availability;
 
-    // Check if the book is available for borrowing
     if (
       bookAvailability === false ||
       bookAvailability === "false" ||
@@ -91,7 +89,7 @@ export const processBorrowDecision = async (request_id, status) => {
       RETURNING books.isbn, books.quantity, books.availability
     `;
     
-    if (status === 1) { // If approved, add 7 days to the return_date
+    if (status === 1) { 
       const sevenDaysLater = new Date();
       sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
 
@@ -116,7 +114,7 @@ export const processBorrowDecision = async (request_id, status) => {
         RETURNING books.isbn, books.quantity, books.availability
       `;
       
-      // Include the 7 days later date in the query parameters
+      
       const result = await pool.query(updateBorrowQuery, [status, sevenDaysLater, request_id]);
 
       if (result.rows.length === 0) {
@@ -127,7 +125,7 @@ export const processBorrowDecision = async (request_id, status) => {
 
       return result;
     } else {
-      // For other statuses, no need to modify return_date
+      
       const result = await pool.query(updateBorrowQuery, [status, request_id]);
 
       if (result.rows.length === 0) {
@@ -140,7 +138,7 @@ export const processBorrowDecision = async (request_id, status) => {
     }
 
   } catch (err) {
-    throw err; // Rethrow the error to be caught by the route handler
+    throw err; 
   }
 };
 

@@ -54,10 +54,10 @@ router.post("/borrow-decision", async (req, res) => {
       )
     );
     console.log(results);
-    // Ensure there are no undefined or empty results
+    
     const updated = results
-      .filter((result) => result && result.rows && result.rows.length > 0) // Filter out any invalid results
-      .map((result) => result.rows[0]); // Now it's safe to access result.rows[0]
+      .filter((result) => result && result.rows && result.rows.length > 0) 
+      .map((result) => result.rows[0]); 
 
     if (updated.length === 0) {
       return res
@@ -67,9 +67,9 @@ router.post("/borrow-decision", async (req, res) => {
 
     res.status(200).json({ status: "Successful", updated });
   } catch (err) {
-    // If an error was thrown (e.g., book is not available)
+    
     console.error("Error processing borrow decisions:", err.message);
-    res.status(400).json({ error: err.message }); // Send the error message from the processBorrowDecision
+    res.status(400).json({ error: err.message }); 
   }
 });
 
