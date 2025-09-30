@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'Nodejs-18.20'  // Make sure this matches your Jenkins tool name
+        nodejs 'Nodejs-18.20'  // Ensure this tool name matches Jenkins Global Tool Configuration
     }
 
     environment {
         APP_NAME = 'librarymanagementsystemcairouniversity'
-        DEPLOY_DIR = '/var/www/librarymanagementsystem'
+        DEPLOY_DIR = 'deploy'  // Local directory inside Jenkins workspace
         ENTRY_POINT = 'index.js'
     }
 
