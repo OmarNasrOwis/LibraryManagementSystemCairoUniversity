@@ -1,9 +1,13 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'Nodejs-18.20'  // Make sure this matches your Jenkins tool name
+    }
+
     environment {
         APP_NAME = 'librarymanagementsystemcairouniversity'
-        DEPLOY_DIR = '/var/www/librarymanagementsystem'  // Adjust this to your actual deployment directory
+        DEPLOY_DIR = '/var/www/librarymanagementsystem'
         ENTRY_POINT = 'index.js'
     }
 
@@ -22,7 +26,6 @@ pipeline {
 
         stage('Stop Existing App') {
             steps {
-                // Kill existing Node process running the app (basic approach)
                 sh '''
                 PID=$(lsof -t -i:3000 || echo "")
                 if [ ! -z "$PID" ]; then
@@ -52,9 +55,15 @@ pipeline {
     post {
         success {
             echo '✅ Deployment completed successfully!'
+            cleanWs()
         }
         failure {
             echo '❌ Deployment failed.'
+            cleanWs()
+        }
+        always {
+            echo '🧹 Cleaning workspace (always runs)'
+            cleanWs()
         }
     }
 }
